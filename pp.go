@@ -19,7 +19,7 @@ var (
 	Default = newPrettyPrinter(3) // pp.* => PrettyPrinter.* => formatAll
 	// If the length of array or slice is larger than this,
 	// the buffer will be shorten as {...}.
-	BufferFoldThreshold = 1024
+	BufferFoldThreshold = 10240000
 	// PrintMapTypes when set to true will have map types will always appended to maps.
 	PrintMapTypes = true
 	// WithLineInfo add file name and line information to output
