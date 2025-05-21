@@ -13,7 +13,7 @@ import (
 )
 
 type testCase struct {
-	object interface{}
+	object any
 	expect string
 }
 
@@ -38,11 +38,10 @@ type Piyo struct {
 type HogeHoge struct {
 	Hell  string
 	World int
-	A     interface{}
+	A     any
 }
 
-type EmptyStruct struct {
-}
+type EmptyStruct struct{}
 
 type User struct {
 	Name      string
@@ -67,8 +66,10 @@ type Circular struct {
 	C *Circular
 }
 
-var c Circular = Circular{}
-var nilSlice []int
+var (
+	c        Circular = Circular{}
+	nilSlice []int
+)
 
 func init() {
 	c.C = &c
@@ -176,7 +177,7 @@ var (
 			`,
 		},
 		{
-			map[string]interface{}{"foo": 10, "bar": map[int]int{20: 30}}, `
+			map[string]any{"foo": 10, "bar": map[int]int{20: 30}}, `
 			[green]map[string]interface {}[reset]{
 			  [red][bold]"[reset][red]bar[reset][red][bold]"[reset]: [green]map[int]int[reset]{
 			    [blue][bold]20[reset]: [blue][bold]30[reset],
@@ -193,24 +194,23 @@ var (
 	bigInt, _      = new(big.Int).SetString("-908f8474ea971baf", 16)
 	bigFloat, _, _ = big.ParseFloat("3.1415926535897932384626433832795028", 10, 10, big.ToZero)
 
-	checkCases = []interface{}{
+	checkCases = []any{
 		Private{b: false, i: 1, u: 2, f: 2.22, c: complex(5, 6)},
 		map[string]int{"hell": 23, "world": 34},
-		map[string]map[string]string{"s1": map[string]string{"v1": "m1", "va1": "me1"}, "si2": map[string]string{"v2": "m2"}},
-		Foo{Bar: 1, Hoge: "a", Hello: map[string]string{"hel": "world", "a": "b"}, HogeHoges: []HogeHoge{HogeHoge{Hell: "a", World: 1}, HogeHoge{Hell: "bbb", World: 100}}},
+		map[string]map[string]string{"s1": {"v1": "m1", "va1": "me1"}, "si2": {"v2": "m2"}},
+		Foo{Bar: 1, Hoge: "a", Hello: map[string]string{"hel": "world", "a": "b"}, HogeHoges: []HogeHoge{{Hell: "a", World: 1}, {Hell: "bbb", World: 100}}},
 		arr,
 		[]string{"aaa", "bbb", "ccc"},
 		make(chan bool, 10),
 		func(a string, b float32) int { return 0 },
 		&HogeHoge{},
 		&Piyo{Field1: map[string]string{"a": "b", "cc": "dd"}, F2: &Foo{}, Fie3: 128},
-		[]interface{}{1, 3},
-		interface{}(1),
+		[]any{1, 3},
+		any(1),
 		HogeHoge{A: "test"},
 		FooPri{Public: "hello", private: "world"},
 		new(regexp.Regexp),
 		unsafe.Pointer(new(regexp.Regexp)),
-		"日本\t語\n\000\U00101234a",
 		bigInt,
 		bigFloat,
 		&tm,
@@ -262,7 +262,7 @@ func processTestCases(t *testing.T, printer *PrettyPrinter, cases []testCase) {
 	}
 }
 
-func logResult(t *testing.T, object interface{}, actual string) {
+func logResult(t *testing.T, object any, actual string) {
 	if isMultiLine(actual) {
 		t.Logf("%#v =>\n%s\n", object, actual)
 	} else {

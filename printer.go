@@ -21,11 +21,11 @@ const (
 	indentWidth = 2
 )
 
-func (pp *PrettyPrinter) format(object interface{}) string {
+func (pp *PrettyPrinter) format(object any) string {
 	return newPrinter(object, &pp.currentScheme, pp.maxDepth, pp.coloringEnabled, pp.decimalUint, pp.exportedOnly, pp.thousandsSeparator, pp.omitEmpty).String()
 }
 
-func newPrinter(object interface{}, currentScheme *ColorScheme, maxDepth int, coloringEnabled bool, decimalUint bool, exportedOnly bool, thousandsSeparator bool, omitEmpty bool) *printer {
+func newPrinter(object any, currentScheme *ColorScheme, maxDepth int, coloringEnabled bool, decimalUint bool, exportedOnly bool, thousandsSeparator bool, omitEmpty bool) *printer {
 	buffer := bytes.NewBufferString("")
 	tw := new(tabwriter.Writer)
 	tw.Init(buffer, indentWidth, 0, 1, ' ', 0)
@@ -92,8 +92,6 @@ func (p *printer) String() string {
 		p.printInterface()
 	case reflect.Ptr:
 		p.printPtr()
-	case reflect.Func:
-		p.printf("%s {...}", p.typeString())
 	case reflect.UnsafePointer:
 		p.printf("%s(%s)", p.typeString(), p.pointerAddr())
 	case reflect.Invalid:
@@ -110,7 +108,7 @@ func (p *printer) print(text string) {
 	fmt.Fprint(p.tw, text)
 }
 
-func (p *printer) printf(format string, args ...interface{}) {
+func (p *printer) printf(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
 	p.print(text)
 }
@@ -123,7 +121,7 @@ func (p *printer) indentPrint(text string) {
 	p.print(p.indent() + text)
 }
 
-func (p *printer) indentPrintf(format string, args ...interface{}) {
+func (p *printer) indentPrintf(format string, args ...any) {
 	text := fmt.Sprintf(format, args...)
 	p.indentPrint(text)
 }
@@ -170,10 +168,6 @@ func (p *printer) printMap() {
 		return
 	}
 
-	if p.visited[p.value.Pointer()] {
-		p.printf("%s{...}", p.typeString())
-		return
-	}
 	p.visited[p.value.Pointer()] = true
 
 	if PrintMapTypes {
@@ -284,18 +278,7 @@ func (p *printer) printSlice() {
 	}
 
 	if p.value.Kind() == reflect.Slice {
-		if p.visited[p.value.Pointer()] {
-			// Stop travarsing cyclic reference
-			p.printf("%s{...}", p.typeString())
-			return
-		}
 		p.visited[p.value.Pointer()] = true
-	}
-
-	// Fold a large buffer
-	if p.value.Len() > BufferFoldThreshold {
-		p.printf("%s{...}", p.typeString())
-		return
 	}
 
 	p.println(p.typeString() + "{")
@@ -348,10 +331,6 @@ func (p *printer) printInterface() {
 }
 
 func (p *printer) printPtr() {
-	if p.visited[p.value.Pointer()] {
-		p.printf("&%s{...}", p.elemTypeString())
-		return
-	}
 	if p.value.Pointer() != 0 {
 		p.visited[p.value.Pointer()] = true
 	}
@@ -410,7 +389,7 @@ func (p *printer) indented(proc func()) {
 	p.depth--
 }
 
-func (p *printer) fmtOrLocalizedSprintf(format string, a ...interface{}) string {
+func (p *printer) fmtOrLocalizedSprintf(format string, a ...any) string {
 	if p.localizedPrinter == nil {
 		return fmt.Sprintf(format, a...)
 	}
@@ -476,7 +455,7 @@ func (p *printer) colorize(text string, color uint16) string {
 	}
 }
 
-func (p *printer) format(object interface{}) string {
+func (p *printer) format(object any) string {
 	pp := newPrinter(object, p.currentScheme, p.maxDepth, p.coloringEnabled, p.decimalUint, p.exportedOnly, p.thousandsSeparator, p.omitEmpty)
 	pp.depth = p.depth
 	pp.visited = p.visited

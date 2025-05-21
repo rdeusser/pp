@@ -1,6 +1,8 @@
 module github.com/k0kubun/pp/v3
 
-go 1.17
+go 1.23.0
+
+toolchain go1.24.2
 
 require (
 	github.com/mattn/go-colorable v0.1.14
